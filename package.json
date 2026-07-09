@@ -1,0 +1,44 @@
+{
+  "name": "owlatex",
+  "version": "0.1.0",
+  "description": "自研 LaTeX IDE 桌面应用（Electron + React）",
+  "main": "./out/main/index.js",
+  "author": "",
+  "license": "MIT",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "preview": "electron-vite preview",
+    "typecheck:node": "tsc -p tsconfig.node.json",
+    "typecheck:web": "tsc -p tsconfig.json",
+    "typecheck": "npm run typecheck:node && npm run typecheck:web",
+    "icon": "node scripts/gen-icon.mjs",
+    "pack": "node scripts/gen-icon.mjs && electron-vite build && electron-builder --win --dir",
+    "dist": "node scripts/gen-icon.mjs && electron-vite build && electron-builder --win"
+  },
+  "dependencies": {
+    "@codemirror/language": "^6.10.3",
+    "@codemirror/legacy-modes": "^6.4.1",
+    "@codemirror/state": "^6.4.1",
+    "@codemirror/view": "^6.34.1",
+    "codemirror": "^6.0.1",
+    "pdfjs-dist": "^4.7.76",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-resizable-panels": "^2.1.6",
+    "zustand": "^5.0.2"
+  },
+  "devDependencies": {
+    "@resvg/resvg-js": "^2.6.2",
+    "@types/node": "^20.17.6",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.3",
+    "electron": "^33.2.0",
+    "electron-builder": "^26.15.3",
+    "electron-vite": "^2.3.0",
+    "png-to-ico": "^3.0.2",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.11"
+  }
+}

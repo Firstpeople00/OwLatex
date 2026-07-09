@@ -1,0 +1,17 @@
+appId: com.owlatex.app
+productName: OwLatex
+directories:
+  output: dist
+files:
+  - out/**
+npmRebuild: false
+win:
+  target:
+    - nsis
+  artifactName: ${productName}-Setup-${version}.${ext}
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  shortcutName: OwLatex
