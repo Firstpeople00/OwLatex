@@ -2,7 +2,7 @@
 
 > **当前版本 v0.1.1** · Windows x64
 
-一个自研的 **LaTeX 桌面 IDE**（Electron + React）。左栏文件树/大纲、中栏源码编辑、右栏 PDF 实时预览，面向多文件论文写作，功能对标 Overleaf 桌面体验、界面参考 Obsidian / JetBrains。
+一个自研的 **LaTeX 桌面 IDE**（Electron + React）。左栏文件树/大纲、中栏源码编辑、右栏 PDF 实时预览，面向多文件论文写作。
 
 > 编译调用本机的 TeX 发行版（MiKTeX / TeX Live），首次启动可引导一键安装。
 
