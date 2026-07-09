@@ -236,7 +236,10 @@ export default function MenuBar(): JSX.Element {
 
   const helpMenu: Item[] = [
     { label: '检查运行环境…', onClick: () => s.openEnvModal() },
-    { label: '关于 OwLatex', onClick: () => s.notify('OwLatex — 自研 LaTeX 编辑器') }
+    {
+      label: `关于 OwLatex（v${__APP_VERSION__}）`,
+      onClick: () => s.notify(`OwLatex v${__APP_VERSION__} — 自研 LaTeX 编辑器`)
+    }
   ]
 
   const menus = [

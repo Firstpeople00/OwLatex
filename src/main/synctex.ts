@@ -1,8 +1,6 @@
 import { spawn } from 'child_process'
 import { dirname, join } from 'path'
-
-// ponytail: 与 compiler 同一默认；texBin 缺省时回退到 MiKTeX
-const DEFAULT_TEX_BIN = 'D:\\Environments\\Tex\\MikTeX\\miktex\\bin\\x64'
+import { defaultTexBinDir } from './tex-detect'
 
 function run(bin: string, args: string[], cwd: string): Promise<string> {
   return new Promise((res) => {
@@ -27,7 +25,8 @@ export async function synctexView(
   line: number,
   texBin?: string
 ): Promise<{ page: number; x: number; y: number; w: number; h: number } | null> {
-  const out = await run(texBin || DEFAULT_TEX_BIN, ['view', '-i', `${line}:0:${file}`, '-o', pdf], dirname(pdf))
+  const bin = texBin || (await defaultTexBinDir())
+  const out = await run(bin, ['view', '-i', `${line}:0:${file}`, '-o', pdf], dirname(pdf))
   const page = out.match(/^Page:(\d+)/m)
   if (!page) return null
   return {
@@ -47,7 +46,8 @@ export async function synctexEdit(
   y: number,
   texBin?: string
 ): Promise<{ file: string; line: number } | null> {
-  const out = await run(texBin || DEFAULT_TEX_BIN, ['edit', '-o', `${page}:${x}:${y}:${pdf}`], dirname(pdf))
+  const bin = texBin || (await defaultTexBinDir())
+  const out = await run(bin, ['edit', '-o', `${page}:${x}:${y}:${pdf}`], dirname(pdf))
   const file = out.match(/^Input:(.+)$/m)
   const line = out.match(/^Line:(\d+)/m)
   if (!file || !line) return null

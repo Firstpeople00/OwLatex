@@ -70,6 +70,7 @@ interface AppState {
   syncInverse: (page: number, x: number, y: number) => Promise<void>
   loadDistros: () => Promise<void>
   setTexBin: (bin: string) => void
+  pickTexBin: () => Promise<void>
   openProject: () => Promise<void>
   openPath: (path: string) => Promise<void>
   loadProject: (res: OpenProjectResult) => Promise<void>
@@ -272,6 +273,11 @@ export const useStore = create<AppState>((set, get) => ({
 
   loadDistros: async () => {
     const distros = await window.api.getDistros()
+    // 合并用户手动指定的路径（检测不到但用户设过）
+    const custom = localStorage.getItem('mylatex.customTexBin')
+    if (custom && !distros.some((d) => d.binDir === custom)) {
+      distros.push({ id: 'custom', name: '自定义', binDir: custom, available: true })
+    }
     set({ distros })
     // 若未选或当前选择不可用，默认选第一个可用发行版
     const cur = get().selectedTexBin
@@ -289,6 +295,22 @@ export const useStore = create<AppState>((set, get) => ({
     set({ selectedTexBin: bin })
     localStorage.setItem('mylatex.texBin', bin)
     void get().compile()
+  },
+
+  pickTexBin: async () => {
+    const dir = await window.api.pickTexBin()
+    if (!dir) {
+      get().notify('该目录下没找到 pdflatex.exe')
+      return
+    }
+    localStorage.setItem('mylatex.customTexBin', dir)
+    if (!get().distros.some((d) => d.binDir === dir)) {
+      set({ distros: [...get().distros, { id: 'custom', name: '自定义', binDir: dir, available: true }] })
+    }
+    const env = get().envStatus
+    if (env) set({ envStatus: { ...env, hasTeX: true } })
+    get().setTexBin(dir) // 选中 + 持久化 + 重编译
+    get().notify(`已指定 TeX 路径：${dir}`)
   },
 
   openProject: async () => {

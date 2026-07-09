@@ -475,6 +475,14 @@ input:focus-visible {
   font-size: var(--fs-sm);
   line-height: 1.5;
 }
+.linklike {
+  border: none;
+  background: transparent;
+  color: var(--accent);
+  cursor: pointer;
+  padding: 0 2px;
+  font-size: inherit;
+}
 .modal-input {
   padding: 6px 10px;
   border: 1px solid var(--border);

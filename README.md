@@ -1,5 +1,7 @@
 # OwLatex
 
+> **当前版本 v0.1.1** · Windows x64
+
 一个自研的 **LaTeX 桌面 IDE**（Electron + React）。左栏文件树/大纲、中栏源码编辑、右栏 PDF 实时预览，面向多文件论文写作，功能对标 Overleaf 桌面体验、界面参考 Obsidian / JetBrains。
 
 > 编译调用本机的 TeX 发行版（MiKTeX / TeX Live），首次启动可引导一键安装。
@@ -21,14 +23,15 @@
 - **导出**：PDF、源码 `.zip`、**Word (.docx) / Markdown / HTML**（后三者经 Pandoc）。
 - **顶栏菜单**：文件 / 编辑 / 插入 / 格式 / 视图 / 帮助。
 - **主题**：浅色 / 深色；Obsidian 风圆角分区 UI，内联 SVG 图标。
-- **运行环境检测**：首次启动检测 LaTeX / Pandoc，缺失可一键 `winget` 联网安装。
+- **运行环境检测**：跨机器自动检测 LaTeX（PATH / 注册表 / 常见安装位置）与 Pandoc；缺失可一键 `winget` 联网安装，识别不到还能手动指定 TeX 路径。
 
 ---
 
 ## 📦 安装（普通用户）
 
-1. 下载并运行 `OwLatex-Setup-<版本>.exe`（可选安装目录、创建桌面快捷方式）。
+1. 下载并运行 `OwLatex-Setup-0.1.1.exe`（可选安装目录、创建桌面快捷方式）。
 2. 首次启动若未检测到 LaTeX，会弹出引导，点「安装 MiKTeX」即可（或到 **帮助 → 检查运行环境** 手动触发）。
+3. 已装 LaTeX 却没识别到？在该弹窗点「**手动指定 TeX 路径…**」选到含 `pdflatex.exe` 的 bin 目录即可。
 
 **前置依赖**（安装包不打包，调用本机）：
 
@@ -84,7 +87,7 @@ npm run dist         # 出 NSIS 安装包（dist/OwLatex-Setup-*.exe）
 
 ```
 src/
-├─ main/        # 窗口、编译(compiler)、SyncTeX、文件服务、导出(exporter)、IPC
+├─ main/        # 窗口、编译(compiler)、SyncTeX、TeX 检测(tex-detect)、文件服务、导出(exporter)、IPC
 ├─ preload/     # contextBridge 白名单 API
 └─ renderer/    # React UI（components / store / editor-view / templates）
 ```
@@ -97,7 +100,6 @@ src/
 - TeX / Pandoc 需本机安装（不随包分发）。
 - 中文文档需在「视图 → 引擎」切换到 **xelatex**（配 ctex）。
 - 文献仅 BibTeX（暂不支持 biber/biblatex）。
-- 发行版检测路径内置常见位置，尚无自定义路径设置面板。
 
 ---
 

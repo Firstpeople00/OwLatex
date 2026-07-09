@@ -7,6 +7,7 @@ export default function EnvModal(): JSX.Element | null {
   const st = useStore((s) => s.envStatus)
   const installing = useStore((s) => s.envInstalling)
   const installEnv = useStore((s) => s.installEnv)
+  const pickTexBin = useStore((s) => s.pickTexBin)
   const closeEnvModal = useStore((s) => s.closeEnvModal)
   if (!open) return null
 
@@ -50,6 +51,12 @@ export default function EnvModal(): JSX.Element | null {
         {st && !st.hasWinget && (
           <div className="env-hint">未检测到 winget，请用「手动下载」自行安装。</div>
         )}
+        <div className="env-hint">
+          已装 LaTeX 却没检测到？
+          <button className="linklike" onClick={() => void pickTexBin()}>
+            手动指定 TeX 路径…
+          </button>
+        </div>
         <div className="modal-actions">
           <button onClick={closeEnvModal}>关闭</button>
         </div>

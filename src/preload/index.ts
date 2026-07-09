@@ -18,6 +18,7 @@ const api = {
   reveal: (path: string) => ipcRenderer.invoke('fs:reveal', path),
   writeClipboard: (text: string) => ipcRenderer.invoke('clipboard:write', text),
   getDistros: () => ipcRenderer.invoke('tex:distros'),
+  pickTexBin: () => ipcRenderer.invoke('tex:pickBin'),
   onProjectChanged: (cb: () => void) => ipcRenderer.on('project:changed', cb),
   compile: (mainFile: string, texBin?: string, engine?: string) =>
     ipcRenderer.invoke('latex:compile', mainFile, texBin, engine),

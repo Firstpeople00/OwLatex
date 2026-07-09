@@ -6,6 +6,7 @@ import { copyFile } from 'fs/promises'
 import { compileMainFile } from './compiler'
 import { synctexView, synctexEdit } from './synctex'
 import { findPandoc, runPandoc, runZip } from './exporter'
+import { detectDistros, clearDistroCache } from './tex-detect'
 import {
   readTree,
   detectMainFile,
@@ -14,12 +15,6 @@ import {
   renamePath,
   makeDir
 } from './fileService'
-
-// 已知 TeX 发行版（Phase 3 设置面板会改为可自定义路径）
-const DISTROS = [
-  { id: 'miktex', name: 'MiKTeX', binDir: 'D:\\Environments\\Tex\\MikTeX\\miktex\\bin\\x64' },
-  { id: 'texlive', name: 'TeX Live', binDir: 'C:\\texlive\\2026\\bin\\windows' }
-]
 
 function createWindow(): void {
   const iconPath = join(__dirname, '../../build/icon.png')
@@ -126,10 +121,24 @@ app.whenReady().then(() => {
     clipboard.writeText(text)
   })
 
-  // 探测可用的 TeX 发行版
-  ipcMain.handle('tex:distros', () =>
-    DISTROS.map((d) => ({ ...d, available: existsSync(join(d.binDir, 'pdflatex.exe')) }))
-  )
+  // 探测可用的 TeX 发行版（PATH + 注册表 + 常见路径，跨机器稳健）
+  ipcMain.handle('tex:distros', () => detectDistros())
+
+  // 手动指定 TeX bin 目录（检测失败时兜底）：返回校验过含 pdflatex.exe 的目录
+  ipcMain.handle('tex:pickBin', async () => {
+    const win = BrowserWindow.getFocusedWindow() ?? undefined
+    const r = await dialog.showOpenDialog(win!, {
+      properties: ['openDirectory'],
+      title: '选择 TeX 的 bin 目录（含 pdflatex.exe）'
+    })
+    if (r.canceled || !r.filePaths[0]) return null
+    const picked = r.filePaths[0]
+    // 直接是 bin 目录，或用户选了 MiKTeX/TeX Live 根目录
+    for (const cand of [picked, join(picked, 'miktex', 'bin', 'x64'), join(picked, 'bin', 'windows')]) {
+      if (existsSync(join(cand, 'pdflatex.exe'))) return cand
+    }
+    return null
+  })
 
   // 编译指定主文件（就地编译），texBin 选发行版，engine 选 pdflatex/xelatex/lualatex
   ipcMain.handle('latex:compile', async (_e, mainFile: string, texBin?: string, engine?: string) =>
@@ -147,7 +156,7 @@ app.whenReady().then(() => {
     })
   }
   ipcMain.handle('env:check', async () => ({
-    hasTeX: DISTROS.some((d) => existsSync(join(d.binDir, 'pdflatex.exe'))),
+    hasTeX: (await detectDistros()).some((d) => d.available),
     hasPandoc: (await findPandoc()) !== null,
     hasWinget: await hasWinget()
   }))
@@ -165,7 +174,10 @@ app.whenReady().then(() => {
         { windowsHide: true }
       )
       c.on('error', (err) => res({ ok: false, message: err.message }))
-      c.on('close', (code) => res({ ok: code === 0, message: code === 0 ? '安装完成' : '安装失败或被取消' }))
+      c.on('close', (code) => {
+        clearDistroCache() // 装完后清缓存，下次检测能发现新装的
+        res({ ok: code === 0, message: code === 0 ? '安装完成' : '安装失败或被取消' })
+      })
     })
   })
   ipcMain.handle('env:openDownload', (_e, target: 'miktex' | 'pandoc') => {

@@ -2,6 +2,7 @@ import { spawn } from 'child_process'
 import { promises as fs } from 'fs'
 import { dirname, basename, join } from 'path'
 import { tmpdir } from 'os'
+import { defaultTexBinDir } from './tex-detect'
 
 /**
  * 编译引擎：直接调用原生 pdflatex.exe（不用 latexmk，因 MiKTeX 不带 Perl）。
@@ -11,11 +12,11 @@ import { tmpdir } from 'os'
  * ⚠️ 就地编译：若主文件目录含中文/空格，pdflatex 可能失败（后续用英文 junction 兜底）。
  * Phase 3 设置面板会支持切换 xelatex / lualatex。
  */
-const DEFAULT_TEX_BIN = 'D:\\Environments\\Tex\\MikTeX\\miktex\\bin\\x64'
 const MAX_PASSES = 3
 
-function getTexBinDir(): string {
-  return process.env.MYLATEX_TEX_BIN || DEFAULT_TEX_BIN
+// texBin 未指定时的兜底：环境变量 → 检测到的默认发行版 → 空串（spawn 走 PATH）
+async function getTexBinDir(): Promise<string> {
+  return process.env.MYLATEX_TEX_BIN || (await defaultTexBinDir())
 }
 
 export interface CompileResult {
@@ -62,7 +63,7 @@ export async function compileMainFile(
   const name = basename(mainFile)
   const job = name.replace(/\.tex$/i, '')
 
-  const texBin = texBinOverride || getTexBinDir()
+  const texBin = texBinOverride || (await getTexBinDir())
   const engine = join(texBin, `${engineName}.exe`)
   const env = { ...process.env, PATH: `${texBin};${process.env.PATH ?? ''}` }
   const args = [

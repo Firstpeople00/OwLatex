@@ -1,5 +1,7 @@
 /// <reference types="vite/client" />
 
+declare const __APP_VERSION__: string
+
 interface FileNode {
   name: string
   path: string
@@ -42,6 +44,7 @@ interface Window {
     reveal: (path: string) => Promise<void>
     writeClipboard: (text: string) => Promise<void>
     getDistros: () => Promise<TexDistro[]>
+    pickTexBin: () => Promise<string | null>
     onProjectChanged: (cb: () => void) => void
     compile: (mainFile: string, texBin?: string, engine?: string) => Promise<CompileResult>
     syncView: (
