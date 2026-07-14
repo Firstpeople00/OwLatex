@@ -34,7 +34,12 @@ const api = {
   exportPdf: (mainFile: string) => ipcRenderer.invoke('export:pdf', mainFile),
   exportZip: (root: string) => ipcRenderer.invoke('export:zip', root),
   exportPandoc: (mainFile: string, format: 'docx' | 'md' | 'html') =>
-    ipcRenderer.invoke('export:pandoc', mainFile, format)
+    ipcRenderer.invoke('export:pandoc', mainFile, format),
+  minimizeWindow: () => ipcRenderer.send('win:minimize'),
+  toggleMaximize: () => ipcRenderer.send('win:maximize'),
+  closeWindow: () => ipcRenderer.send('win:close'),
+  onMaximizeChange: (cb: (maximized: boolean) => void) =>
+    ipcRenderer.on('win:maximized', (_e, v: boolean) => cb(v))
 }
 
 if (process.contextIsolated) {

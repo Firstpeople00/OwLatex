@@ -100,12 +100,20 @@ body {
   display: flex;
   align-items: center;
   height: 38px;
-  padding: 0 var(--sp-2);
+  padding: 0 0 0 var(--sp-2);
   background: var(--bg-app);
   font-size: var(--fs-base);
   flex: 0 0 auto;
   position: relative;
   z-index: 50;
+  /* 无边框窗口：整条菜单栏作为拖拽区（可拖动/双击最大化窗口） */
+  -webkit-app-region: drag;
+}
+/* 交互元素恢复可点击 */
+.menubar button,
+.menubar .dropdown,
+.menu-backdrop {
+  -webkit-app-region: no-drag;
 }
 .menubar-left {
   display: flex;
@@ -241,6 +249,32 @@ body {
 .menubar-actions button:disabled {
   opacity: 0.45;
   cursor: default;
+}
+
+/* 自绘窗口控件（最小化/最大化/关闭）——贴右上角，Windows 风 */
+.win-controls {
+  display: flex;
+  align-self: stretch;
+  margin-left: var(--sp-2);
+}
+.win-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+.win-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+.win-close:hover {
+  background: #e81123;
+  color: #fff;
 }
 
 /* Toast */

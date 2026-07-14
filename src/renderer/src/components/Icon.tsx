@@ -68,7 +68,21 @@ const PATHS: Record<string, ReactNode> = {
       <path d="M12 17h.01" />
     </>
   ),
-  check: <path d="M20 6 9 17l-5-5" />
+  check: <path d="M20 6 9 17l-5-5" />,
+  'win-min': <path d="M5 12h14" />,
+  'win-max': <rect x="5.5" y="5.5" width="13" height="13" rx="1" />,
+  'win-restore': (
+    <>
+      <rect x="8" y="4.5" width="11.5" height="11.5" rx="1" />
+      <path d="M15.5 16v2.5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1h2.5" />
+    </>
+  ),
+  'win-close': (
+    <>
+      <path d="M6 6l12 12" />
+      <path d="M18 6 6 18" />
+    </>
+  )
 }
 
 export function Icon({ name, size = 16 }: { name: string; size?: number }): JSX.Element {

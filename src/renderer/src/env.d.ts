@@ -70,5 +70,9 @@ interface Window {
       mainFile: string,
       format: 'docx' | 'md' | 'html'
     ) => Promise<{ ok: boolean; message: string }>
+    minimizeWindow: () => void
+    toggleMaximize: () => void
+    closeWindow: () => void
+    onMaximizeChange: (cb: (maximized: boolean) => void) => void
   }
 }

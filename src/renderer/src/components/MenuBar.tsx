@@ -85,12 +85,14 @@ function MenuList({ items, onClose }: { items: Item[]; onClose: () => void }): J
 export default function MenuBar(): JSX.Element {
   const s = useStore()
   const [open, setOpen] = useState<string | null>(null)
+  const [maxed, setMaxed] = useState(false)
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent): void => {
       if (e.key === 'Escape') setOpen(null)
     }
     window.addEventListener('keydown', onKey)
+    window.api.onMaximizeChange(setMaxed)
     return () => window.removeEventListener('keydown', onKey)
   }, [])
 
@@ -308,6 +310,22 @@ export default function MenuBar(): JSX.Element {
           {s.status === 'compiling' ? <span className="spinner" /> : '●'} {statusText}
         </span>
         {s.dirty && <span className="dirty">● 未保存</span>}
+      </div>
+
+      <div className="win-controls">
+        <button className="win-btn" title="最小化" onClick={() => window.api.minimizeWindow()}>
+          <Icon name="win-min" size={15} />
+        </button>
+        <button
+          className="win-btn"
+          title={maxed ? '还原' : '最大化'}
+          onClick={() => window.api.toggleMaximize()}
+        >
+          <Icon name={maxed ? 'win-restore' : 'win-max'} size={14} />
+        </button>
+        <button className="win-btn win-close" title="关闭" onClick={() => window.api.closeWindow()}>
+          <Icon name="win-close" size={15} />
+        </button>
       </div>
     </div>
   )

@@ -23,6 +23,8 @@ function createWindow(): void {
     height: 950,
     show: false,
     autoHideMenuBar: true,
+    frame: false, // 去掉 Windows 原生标题栏，改用自研菜单栏 + 自绘窗口控件
+    backgroundColor: '#1e1e1e',
     title: 'OwLatex',
     icon: existsSync(iconPath) ? iconPath : undefined,
     webPreferences: {
@@ -35,6 +37,12 @@ function createWindow(): void {
   })
 
   mainWindow.on('ready-to-show', () => mainWindow.show())
+
+  // 无边框窗口：把最大化状态推给 renderer，用于切换 最大化/还原 图标
+  const sendMax = (): void =>
+    mainWindow.webContents.send('win:maximized', mainWindow.isMaximized())
+  mainWindow.on('maximize', sendMax)
+  mainWindow.on('unmaximize', sendMax)
 
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url)
@@ -51,6 +59,15 @@ function createWindow(): void {
 app.whenReady().then(() => {
   // 移除默认应用菜单（我们有自研菜单栏）——顺带释放 Ctrl+=/- 等默认缩放快捷键
   Menu.setApplicationMenu(null)
+
+  // 无边框窗口控制：由菜单栏里的自绘按钮触发
+  ipcMain.on('win:minimize', (e) => BrowserWindow.fromWebContents(e.sender)?.minimize())
+  ipcMain.on('win:maximize', (e) => {
+    const w = BrowserWindow.fromWebContents(e.sender)
+    if (w?.isMaximized()) w.unmaximize()
+    else w?.maximize()
+  })
+  ipcMain.on('win:close', (e) => BrowserWindow.fromWebContents(e.sender)?.close())
 
   // 文件监听：用 stdlib fs.watch（递归），改动时通知 renderer 刷新树（忽略编译产物，防抖）
   let watcher: FSWatcher | null = null

@@ -1,6 +1,6 @@
 # OwLatex
 
-> **当前版本 v0.1.1** · Windows x64
+> **当前版本 v0.2.0** · Windows x64
 
 一个自研的 **LaTeX 桌面 IDE**（Electron + React）。左栏文件树/大纲、中栏源码编辑、右栏 PDF 实时预览，面向多文件论文写作。
 
@@ -22,14 +22,14 @@
 - **模板**：article / 中文（ctex）/ beamer。
 - **导出**：PDF、源码 `.zip`、**Word (.docx) / Markdown / HTML**（后三者经 Pandoc）。
 - **顶栏菜单**：文件 / 编辑 / 插入 / 格式 / 视图 / 帮助。
-- **主题**：浅色 / 深色；Obsidian 风圆角分区 UI，内联 SVG 图标。
+- **主题**：浅色 / 深色；Obsidian 风圆角分区 UI，内联 SVG 图标；自绘无边框标题栏（窗口控制并入菜单栏）。
 - **运行环境检测**：跨机器自动检测 LaTeX（PATH / 注册表 / 常见安装位置）与 Pandoc；缺失可一键 `winget` 联网安装，识别不到还能手动指定 TeX 路径。
 
 ---
 
 ## 📦 安装（普通用户）
 
-1. 下载并运行 `OwLatex-Setup-0.1.1.exe`（可选安装目录、创建桌面快捷方式）。
+1. 下载并运行 `OwLatex-Setup-0.2.0.exe`（可选安装目录、创建桌面快捷方式）。
 2. 首次启动若未检测到 LaTeX，会弹出引导，点「安装 MiKTeX」即可（或到 **帮助 → 检查运行环境** 手动触发）。
 3. 已装 LaTeX 却没识别到？在该弹窗点「**手动指定 TeX 路径…**」选到含 `pdflatex.exe` 的 bin 目录即可。
 
