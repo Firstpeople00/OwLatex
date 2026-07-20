@@ -39,3 +39,9 @@ export const editorUndo = (): void => void (focused() && undo(view!))
 export const editorRedo = (): void => void (focused() && redo(view!))
 export const editorSelectAll = (): void => void (focused() && selectAll(view!))
 export const editorFind = (): void => void (focused() && openSearchPanel(view!))
+
+// 常用插入片段（工具栏与顶栏菜单共用）
+export const SNIP_TABLE =
+  '\\begin{table}[ht]\n  \\centering\n  \\begin{tabular}{cc}\n    a & b \\\\\n    c & d \\\\\n  \\end{tabular}\n  \\caption{}\n  \\label{}\n\\end{table}\n'
+export const SNIP_ITEMIZE = '\\begin{itemize}\n  \\item \n\\end{itemize}\n'
+export const SNIP_ENUM = '\\begin{enumerate}\n  \\item \n\\end{enumerate}\n'

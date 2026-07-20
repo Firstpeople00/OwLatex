@@ -82,6 +82,71 @@ const PATHS: Record<string, ReactNode> = {
       <path d="M6 6l12 12" />
       <path d="M18 6 6 18" />
     </>
+  ),
+  undo: (
+    <>
+      <path d="M9 14 4 9l5-5" />
+      <path d="M4 9h11a5 5 0 0 1 0 10h-4" />
+    </>
+  ),
+  redo: (
+    <>
+      <path d="m15 14 5-5-5-5" />
+      <path d="M20 9H9a5 5 0 0 0 0 10h4" />
+    </>
+  ),
+  heading: (
+    <>
+      <path d="M6 12h12" />
+      <path d="M6 20V4" />
+      <path d="M18 20V4" />
+    </>
+  ),
+  link: (
+    <>
+      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+    </>
+  ),
+  table: (
+    <>
+      <rect width="18" height="18" x="3" y="3" rx="2" />
+      <path d="M3 9h18" />
+      <path d="M3 15h18" />
+      <path d="M12 3v18" />
+    </>
+  ),
+  list: (
+    <>
+      <path d="M8 6h13" />
+      <path d="M8 12h13" />
+      <path d="M8 18h13" />
+      <path d="M3 6h.01" />
+      <path d="M3 12h.01" />
+      <path d="M3 18h.01" />
+    </>
+  ),
+  'list-ordered': (
+    <>
+      <path d="M10 6h11" />
+      <path d="M10 12h11" />
+      <path d="M10 18h11" />
+      <path d="M4 6h1v4" />
+      <path d="M4 10h2" />
+      <path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1" />
+    </>
+  ),
+  tag: (
+    <>
+      <path d="M12.6 2.6A2 2 0 0 0 11.2 2H4a2 2 0 0 0-2 2v7.2a2 2 0 0 0 .6 1.4l8.7 8.7a2.4 2.4 0 0 0 3.4 0l6.6-6.6a2.4 2.4 0 0 0 0-3.4z" />
+      <path d="M7.5 7.5h.01" />
+    </>
+  ),
+  search: (
+    <>
+      <circle cx="11" cy="11" r="8" />
+      <path d="m21 21-4.3-4.3" />
+    </>
   )
 }
 

@@ -9,7 +9,10 @@ import {
   editorUndo,
   editorRedo,
   editorSelectAll,
-  editorFind
+  editorFind,
+  SNIP_TABLE,
+  SNIP_ITEMIZE,
+  SNIP_ENUM
 } from '../editor-view'
 
 type Item =
@@ -29,11 +32,6 @@ const STATUS_LABEL: Record<string, string> = {
   success: '编译成功',
   error: '编译失败'
 }
-
-const SNIP_TABLE =
-  '\\begin{table}[ht]\n  \\centering\n  \\begin{tabular}{cc}\n    a & b \\\\\n    c & d \\\\\n  \\end{tabular}\n  \\caption{}\n  \\label{}\n\\end{table}\n'
-const SNIP_ITEMIZE = '\\begin{itemize}\n  \\item \n\\end{itemize}\n'
-const SNIP_ENUM = '\\begin{enumerate}\n  \\item \n\\end{enumerate}\n'
 
 function baseName(p: string | null): string {
   return p ? (p.replace(/\\/g, '/').split('/').pop() ?? p) : ''

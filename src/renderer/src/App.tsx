@@ -3,6 +3,8 @@ import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import FileTree from './components/FileTree'
 import OutlinePanel from './components/OutlinePanel'
 import Editor from './components/Editor'
+import EditorToolbar from './components/EditorToolbar'
+import TabBar from './components/TabBar'
 import PdfPreview from './components/PdfPreview'
 import ProblemsPanel from './components/ProblemsPanel'
 import MenuBar from './components/MenuBar'
@@ -68,6 +70,8 @@ export default function App(): JSX.Element {
         <PanelResizeHandle className="resize-handle" />
         <Panel defaultSize={41} minSize={15}>
           <div className="editor-pane">
+            <TabBar />
+            <EditorToolbar />
             <Editor />
             <ProblemsPanel />
           </div>

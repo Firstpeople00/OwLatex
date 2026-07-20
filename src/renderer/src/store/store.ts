@@ -16,6 +16,8 @@ interface AppState {
   activeFile: string | null
   source: string
   dirty: boolean
+  openFiles: string[] // 已打开的标签（顺序）
+  buffers: Record<string, { text: string; dirty: boolean }> // 非活动标签的缓冲区
 
   status: CompileStatus
   log: string
@@ -76,8 +78,10 @@ interface AppState {
   loadProject: (res: OpenProjectResult) => Promise<void>
   refreshTree: () => Promise<void>
   openFile: (path: string) => Promise<void>
+  closeFile: (path: string) => Promise<void>
   setSource: (s: string) => void
   saveActive: () => Promise<void>
+  saveAll: () => Promise<void>
   setMainFile: (path: string) => void
   compile: () => Promise<void>
 }
@@ -89,6 +93,8 @@ export const useStore = create<AppState>((set, get) => ({
   activeFile: null,
   source: '',
   dirty: false,
+  openFiles: [],
+  buffers: {},
 
   status: 'idle',
   log: '',
@@ -187,7 +193,7 @@ export const useStore = create<AppState>((set, get) => ({
     const i = Math.max(oldPath.lastIndexOf('\\'), oldPath.lastIndexOf('/'))
     const newPath = `${oldPath.slice(0, i)}\\${newName}`
     await window.api.rename(oldPath, newPath)
-    // 修正 activeFile / mainFile 对该路径（或其子路径）的引用
+    // 修正 activeFile / mainFile / 标签 / 缓冲区 对该路径（或其子路径）的引用
     const fix = (p: string | null): string | null =>
       !p
         ? p
@@ -196,15 +202,34 @@ export const useStore = create<AppState>((set, get) => ({
           : p.startsWith(`${oldPath}\\`)
             ? newPath + p.slice(oldPath.length)
             : p
-    set({ activeFile: fix(get().activeFile), mainFile: fix(get().mainFile) })
+    const { openFiles, buffers } = get()
+    const nextBuffers: typeof buffers = {}
+    for (const [p, b] of Object.entries(buffers)) nextBuffers[fix(p) as string] = b
+    set({
+      activeFile: fix(get().activeFile),
+      mainFile: fix(get().mainFile),
+      openFiles: openFiles.map((p) => fix(p) as string),
+      buffers: nextBuffers
+    })
     await get().refreshTree()
   },
 
   deleteItem: async (path) => {
     await window.api.trash(path)
-    const under = (p: string | null): boolean => !!p && (p === path || p.startsWith(`${path}\\`))
-    if (under(get().activeFile)) set({ activeFile: null, source: '', dirty: false })
-    if (under(get().mainFile)) set({ mainFile: null })
+    const under = (p: string): boolean => p === path || p.startsWith(`${path}\\`)
+    const { activeFile, mainFile, openFiles, buffers } = get()
+    const activeGone = !!activeFile && under(activeFile)
+    const nextBuffers = { ...buffers }
+    for (const p of Object.keys(buffers)) if (under(p)) delete nextBuffers[p]
+    const nextOpen = openFiles.filter((p) => !under(p))
+    set({
+      openFiles: nextOpen,
+      buffers: nextBuffers,
+      mainFile: mainFile && under(mainFile) ? null : mainFile,
+      ...(activeGone ? { activeFile: null, source: '', dirty: false } : {})
+    })
+    // 活动文件被删：切到剩余标签（activeFile 已置空，openFile 不会回写缓冲）
+    if (activeGone && nextOpen[0]) await get().openFile(nextOpen[0])
     await get().refreshTree()
   },
 
@@ -331,6 +356,8 @@ export const useStore = create<AppState>((set, get) => ({
       activeFile: null,
       source: '',
       dirty: false,
+      openFiles: [],
+      buffers: {},
       status: 'idle',
       pdfData: null
     })
@@ -364,8 +391,63 @@ export const useStore = create<AppState>((set, get) => ({
   },
 
   openFile: async (path) => {
-    const content = await window.api.readFile(path)
-    set({ activeFile: path, source: content, dirty: false })
+    const { activeFile, source, dirty, openFiles, buffers } = get()
+    if (path === activeFile) return
+    // 暂存当前活动文件的编辑到缓冲区（避免切换标签丢未保存内容）
+    const nextBuffers = { ...buffers }
+    if (activeFile) nextBuffers[activeFile] = { text: source, dirty }
+    // 目标文件：优先取缓冲区（含未保存编辑），否则读盘
+    let text: string
+    let d: boolean
+    if (nextBuffers[path]) {
+      text = nextBuffers[path].text
+      d = nextBuffers[path].dirty
+      delete nextBuffers[path]
+    } else {
+      text = await window.api.readFile(path)
+      d = false
+    }
+    set({
+      activeFile: path,
+      source: text,
+      dirty: d,
+      openFiles: openFiles.includes(path) ? openFiles : [...openFiles, path],
+      buffers: nextBuffers
+    })
+  },
+
+  closeFile: async (path) => {
+    const { activeFile, openFiles, buffers, source, dirty } = get()
+    const isDirty = path === activeFile ? dirty : buffers[path]?.dirty
+    if (isDirty) {
+      const name = path.replace(/\\/g, '/').split('/').pop()
+      if (!window.confirm(`${name} 有未保存的修改，仍要关闭并丢弃？`)) return
+    }
+    const idx = openFiles.indexOf(path)
+    const nextOpen = openFiles.filter((p) => p !== path)
+    const nextBuffers = { ...buffers }
+    delete nextBuffers[path]
+    if (path !== activeFile) {
+      set({ openFiles: nextOpen, buffers: nextBuffers })
+      return
+    }
+    // 关闭的是活动标签：激活右邻，否则左邻，否则清空
+    const neighbor = nextOpen[idx] ?? nextOpen[idx - 1] ?? null
+    if (!neighbor) {
+      set({ openFiles: nextOpen, buffers: nextBuffers, activeFile: null, source: '', dirty: false })
+      return
+    }
+    let text: string
+    let d: boolean
+    if (nextBuffers[neighbor]) {
+      text = nextBuffers[neighbor].text
+      d = nextBuffers[neighbor].dirty
+      delete nextBuffers[neighbor]
+    } else {
+      text = await window.api.readFile(neighbor)
+      d = false
+    }
+    set({ openFiles: nextOpen, buffers: nextBuffers, activeFile: neighbor, source: text, dirty: d })
   },
 
   setSource: (s) => set({ source: s, dirty: true }),
@@ -377,11 +459,25 @@ export const useStore = create<AppState>((set, get) => ({
     set({ dirty: false })
   },
 
+  // 保存活动文件 + 所有有未保存编辑的标签（编译前调用，避免其它标签的改动没落盘）
+  saveAll: async () => {
+    const { activeFile, source, dirty, buffers } = get()
+    if (activeFile && dirty) await window.api.writeFile(activeFile, source)
+    const nextBuffers = { ...buffers }
+    for (const [p, b] of Object.entries(buffers)) {
+      if (b.dirty) {
+        await window.api.writeFile(p, b.text)
+        nextBuffers[p] = { text: b.text, dirty: false }
+      }
+    }
+    set({ dirty: activeFile ? false : dirty, buffers: nextBuffers })
+  },
+
   setMainFile: (path) => set({ mainFile: path }),
 
   compile: async () => {
     const { mainFile } = get()
-    await get().saveActive() // 编译前先把当前文件存盘
+    await get().saveAll() // 编译前把所有标签的改动落盘
     if (!mainFile) {
       set({ status: 'error', log: '未找到主文件（含 \\documentclass 的 .tex）。请在文件树右键设为主文件。' })
       return
