@@ -30,6 +30,23 @@ interface TexDistro {
   available: boolean
 }
 
+interface VersionEntry {
+  oid: string
+  name: string
+  kind: 'auto' | 'manual'
+  timestamp: number
+}
+interface DiffPart {
+  added: boolean
+  removed: boolean
+  value: string
+}
+interface DiffFile {
+  path: string
+  status: 'added' | 'removed' | 'modified'
+  hunks?: DiffPart[]
+}
+
 interface Window {
   api: {
     openProject: () => Promise<OpenProjectResult | null>
@@ -70,6 +87,12 @@ interface Window {
       mainFile: string,
       format: 'docx' | 'md' | 'html'
     ) => Promise<{ ok: boolean; message: string }>
+    versionSnapshot: (root: string, name: string, kind: 'auto' | 'manual') => Promise<string | null>
+    versionList: (root: string) => Promise<VersionEntry[]>
+    versionDiff: (root: string, a: string, b: string) => Promise<DiffFile[]>
+    versionRestore: (root: string, oid: string) => Promise<void>
+    versionInfo: (root: string) => Promise<{ sizeBytes: number; count: number }>
+    versionClear: (root: string) => Promise<void>
     minimizeWindow: () => void
     toggleMaximize: () => void
     closeWindow: () => void

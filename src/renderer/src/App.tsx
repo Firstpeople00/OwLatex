@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import FileTree from './components/FileTree'
 import OutlinePanel from './components/OutlinePanel'
+import VersionControlModal from './components/VersionControlModal'
 import Editor from './components/Editor'
 import EditorToolbar from './components/EditorToolbar'
 import TabBar from './components/TabBar'
@@ -83,6 +84,7 @@ export default function App(): JSX.Element {
       </PanelGroup>
       <PromptModal />
       <EnvModal />
+      <VersionControlModal />
       <Toast />
     </div>
   )

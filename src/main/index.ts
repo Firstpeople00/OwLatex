@@ -8,6 +8,14 @@ import { synctexView, synctexEdit } from './synctex'
 import { findPandoc, runPandoc, runZip } from './exporter'
 import { detectDistros, clearDistroCache } from './tex-detect'
 import {
+  snapshot,
+  listVersions,
+  diff as versionDiff,
+  restore,
+  repoInfo,
+  clearAll
+} from './versionService'
+import {
   readTree,
   detectMainFile,
   readFileText,
@@ -242,6 +250,18 @@ app.whenReady().then(() => {
     const dir = dirname(mainFile)
     return runPandoc(pandoc, mainFile, r.filePath, dir, existsSync(join(dir, 'refs.bib')))
   })
+
+  // 论文版本管理（内置 isomorphic-git，版本库在 .mylatex/versions）
+  ipcMain.handle('version:snapshot', (_e, root: string, name: string, kind: 'auto' | 'manual') =>
+    snapshot(root, name, kind)
+  )
+  ipcMain.handle('version:list', (_e, root: string) => listVersions(root))
+  ipcMain.handle('version:diff', (_e, root: string, a: string, b: string) =>
+    versionDiff(root, a, b)
+  )
+  ipcMain.handle('version:restore', (_e, root: string, oid: string) => restore(root, oid))
+  ipcMain.handle('version:info', (_e, root: string) => repoInfo(root))
+  ipcMain.handle('version:clear', (_e, root: string) => clearAll(root))
 
   // SyncTeX 双向定位
   ipcMain.handle('synctex:view', (_e, pdf: string, file: string, line: number, texBin?: string) =>

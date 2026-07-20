@@ -1,6 +1,6 @@
 {
   "name": "owlatex",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "自研 LaTeX IDE 桌面应用（Electron + React）",
   "main": "./out/main/index.js",
   "author": "",
@@ -22,6 +22,8 @@
     "@codemirror/state": "^6.4.1",
     "@codemirror/view": "^6.34.1",
     "codemirror": "^6.0.1",
+    "diff": "^9.0.0",
+    "isomorphic-git": "^1.38.9",
     "pdfjs-dist": "^4.7.76",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

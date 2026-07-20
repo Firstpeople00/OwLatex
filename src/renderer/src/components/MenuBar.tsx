@@ -234,6 +234,11 @@ export default function MenuBar(): JSX.Element {
     { label: '自动编译', checked: s.autoCompile, onClick: () => s.setAutoCompile(!s.autoCompile) }
   ]
 
+  const versionMenu: Item[] = [
+    { label: '保存版本…', disabled: !hasProject, onClick: () => s.saveVersion() },
+    { label: '版本控制…', disabled: !hasProject, onClick: () => s.openVC() }
+  ]
+
   const helpMenu: Item[] = [
     { label: '检查运行环境…', onClick: () => s.openEnvModal() },
     {
@@ -248,6 +253,7 @@ export default function MenuBar(): JSX.Element {
     { name: '插入', items: insertMenu },
     { name: '格式', items: formatMenu },
     { name: '视图', items: viewMenu },
+    { name: '版本', items: versionMenu },
     { name: '帮助', items: helpMenu }
   ]
 

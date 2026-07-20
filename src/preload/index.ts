@@ -35,6 +35,14 @@ const api = {
   exportZip: (root: string) => ipcRenderer.invoke('export:zip', root),
   exportPandoc: (mainFile: string, format: 'docx' | 'md' | 'html') =>
     ipcRenderer.invoke('export:pandoc', mainFile, format),
+  versionSnapshot: (root: string, name: string, kind: 'auto' | 'manual') =>
+    ipcRenderer.invoke('version:snapshot', root, name, kind),
+  versionList: (root: string) => ipcRenderer.invoke('version:list', root),
+  versionDiff: (root: string, a: string, b: string) =>
+    ipcRenderer.invoke('version:diff', root, a, b),
+  versionRestore: (root: string, oid: string) => ipcRenderer.invoke('version:restore', root, oid),
+  versionInfo: (root: string) => ipcRenderer.invoke('version:info', root),
+  versionClear: (root: string) => ipcRenderer.invoke('version:clear', root),
   minimizeWindow: () => ipcRenderer.send('win:minimize'),
   toggleMaximize: () => ipcRenderer.send('win:maximize'),
   closeWindow: () => ipcRenderer.send('win:close'),

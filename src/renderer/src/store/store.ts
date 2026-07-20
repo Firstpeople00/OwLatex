@@ -40,6 +40,7 @@ interface AppState {
 
   theme: 'light' | 'dark'
   autoCompile: boolean
+  autoSnapshot: boolean
   engine: 'pdflatex' | 'xelatex' | 'lualatex'
   pandocAvailable: boolean
   notice: string | null
@@ -84,6 +85,19 @@ interface AppState {
   saveAll: () => Promise<void>
   setMainFile: (path: string) => void
   compile: () => Promise<void>
+
+  versions: VersionEntry[]
+  diffView: { aName: string; bName: string; files: DiffFile[] } | null
+  vcOpen: boolean
+  loadVersions: () => Promise<void>
+  saveVersion: () => void
+  restoreVersion: (oid: string, name: string) => Promise<void>
+  compareVersion: (aOid: string, bOid: string, aName: string, bName: string) => Promise<void>
+  closeDiff: () => void
+  openVC: () => void
+  closeVC: () => void
+  setAutoSnapshot: (v: boolean) => void
+  clearVersions: () => Promise<void>
 }
 
 export const useStore = create<AppState>((set, get) => ({
@@ -95,6 +109,9 @@ export const useStore = create<AppState>((set, get) => ({
   dirty: false,
   openFiles: [],
   buffers: {},
+  versions: [],
+  diffView: null,
+  vcOpen: false,
 
   status: 'idle',
   log: '',
@@ -120,6 +137,7 @@ export const useStore = create<AppState>((set, get) => ({
 
   theme: (localStorage.getItem('mylatex.theme') as 'light' | 'dark') || 'light',
   autoCompile: localStorage.getItem('mylatex.autoCompile') !== 'false',
+  autoSnapshot: localStorage.getItem('mylatex.autoSnapshot') !== 'false',
   engine: (localStorage.getItem('mylatex.engine') as 'pdflatex' | 'xelatex' | 'lualatex') || 'pdflatex',
   pandocAvailable: false,
   notice: null,
@@ -376,6 +394,7 @@ export const useStore = create<AppState>((set, get) => ({
       for (const m of txt.matchAll(/@\w+\s*\{\s*([^,\s}]+)/g)) keys.add(m[1])
     }
     set({ bibKeys: [...keys] })
+    void get().loadVersions() // 加载版本历史
 
     // 自动打开主文件并编译一次
     if (res.mainFile) {
@@ -490,6 +509,83 @@ export const useStore = create<AppState>((set, get) => ({
       durationMs: res.durationMs,
       pdfData: res.success && res.pdf ? res.pdf : get().pdfData
     })
-    if (res.success) void get().loadOutline()
+    if (res.success) {
+      void get().loadOutline()
+      // 编译成功后自动快照（可在版本控制设置里关闭；内容无改动时主进程会跳过）
+      const root = get().projectRoot
+      if (root && get().autoSnapshot)
+        void window.api
+          .versionSnapshot(root, '自动快照', 'auto')
+          .then((oid) => {
+            if (oid) void get().loadVersions()
+          })
+          .catch(() => {})
+    }
+  },
+
+  loadVersions: async () => {
+    const root = get().projectRoot
+    if (!root) return set({ versions: [] })
+    set({ versions: await window.api.versionList(root).catch(() => []) })
+  },
+
+  saveVersion: () => {
+    const root = get().projectRoot
+    if (!root) return
+    // 默认版本名：干净的时间戳，预填进输入框（选中态，回车即用、想改直接覆盖）
+    const n = new Date()
+    const p = (x: number): string => String(x).padStart(2, '0')
+    const defaultName = `版本 ${n.getFullYear()}-${p(n.getMonth() + 1)}-${p(n.getDate())} ${p(n.getHours())}:${p(n.getMinutes())}`
+    get().openPrompt({
+      title: '保存版本（留空则用默认名）',
+      value: defaultName,
+      onOk: async (name) => {
+        const label = name.trim() || defaultName
+        await get().saveAll()
+        const oid = await window.api.versionSnapshot(root, label, 'manual')
+        await get().loadVersions()
+        get().notify(oid ? `已保存版本「${label}」` : '当前无改动，未新建版本')
+      }
+    })
+  },
+
+  restoreVersion: async (oid, name) => {
+    const root = get().projectRoot
+    if (!root) return
+    if (!window.confirm(`恢复到「${name}」？\n当前状态会先自动备份，可再回退。`)) return
+    await window.api.versionRestore(root, oid)
+    await get().openPath(root) // 重载工程（清缓冲、刷树、重编译）
+    await get().loadVersions()
+    get().notify(`已恢复到「${name}」`)
+  },
+
+  // a/b 为版本 oid，b 可为 'WORKDIR'；diff 展示 a → b 的增删
+  compareVersion: async (aOid, bOid, aName, bName) => {
+    const root = get().projectRoot
+    if (!root) return
+    if (bOid === 'WORKDIR') await get().saveAll()
+    const files = await window.api.versionDiff(root, aOid, bOid).catch(() => [])
+    set({ diffView: { aName, bName, files } })
+  },
+
+  closeDiff: () => set({ diffView: null }),
+
+  openVC: () => {
+    set({ vcOpen: true })
+    void get().loadVersions()
+  },
+  closeVC: () => set({ vcOpen: false, diffView: null }),
+
+  setAutoSnapshot: (v) => {
+    localStorage.setItem('mylatex.autoSnapshot', String(v))
+    set({ autoSnapshot: v })
+  },
+
+  clearVersions: async () => {
+    const root = get().projectRoot
+    if (!root) return
+    await window.api.versionClear(root)
+    await get().loadVersions()
+    get().notify('已清空全部版本历史')
   }
 }))

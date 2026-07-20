@@ -1,6 +1,6 @@
 # OwLatex
 
-> **当前版本 v0.3.0** · Windows x64
+> **当前版本 v0.4.0** · Windows x64
 
 一个自研的 **LaTeX 桌面 IDE**（Electron + React）。左栏文件树/大纲、中栏源码编辑、右栏 PDF 实时预览，面向多文件论文写作。
 
@@ -20,10 +20,11 @@
 - **错误定位**：解析编译日志 → 问题面板 + 点击跳到出错行 + 编辑器红波浪线。
 - **SyncTeX 双向跳转**：源码光标 → PDF 定位；PDF 双击 → 跳回源码。
 - **大纲导航**：按 `\input` 顺序提取章节，点击跨文件跳转。
+- **论文版本管理**：内置 Git（零安装），保存命名版本 / 编译后自动快照 / 版本差异对比 / 一键恢复；按内容去重，未改动的图片文件跨版本只存一份。「版本控制」设置式面板统一管理。
 - **文件树右键菜单**（VS Code 风）：新建文件/文件夹、重命名、删除到回收站、复制路径、在资源管理器中显示；空白处/文件/文件夹三套菜单。
 - **模板**：article / 中文（ctex）/ beamer。
 - **导出**：PDF、源码 `.zip`、**Word (.docx) / Markdown / HTML**（后三者经 Pandoc）。
-- **顶栏菜单**：文件 / 编辑 / 插入 / 格式 / 视图 / 帮助。
+- **顶栏菜单**：文件 / 编辑 / 插入 / 格式 / 视图 / 版本 / 帮助。
 - **主题**：浅色 / 深色；Obsidian 风圆角分区 UI，内联 SVG 图标；自绘无边框标题栏（窗口控制并入菜单栏）。
 - **运行环境检测**：跨机器自动检测 LaTeX（PATH / 注册表 / 常见安装位置）与 Pandoc；缺失可一键 `winget` 联网安装，识别不到还能手动指定 TeX 路径。
 
@@ -31,7 +32,7 @@
 
 ## 📦 安装（普通用户）
 
-1. 下载并运行 `OwLatex-Setup-0.3.0.exe`（可选安装目录、创建桌面快捷方式）。
+1. 下载并运行 `OwLatex-Setup-0.4.0.exe`（可选安装目录、创建桌面快捷方式）。
 2. 首次启动若未检测到 LaTeX，会弹出引导，点「安装 MiKTeX」即可（或到 **帮助 → 检查运行环境** 手动触发）。
 3. 已装 LaTeX 却没识别到？在该弹窗点「**手动指定 TeX 路径…**」选到含 `pdflatex.exe` 的 bin 目录即可。
 
@@ -84,12 +85,13 @@ npm run dist         # 出 NSIS 安装包（dist/OwLatex-Setup-*.exe）
 - **无 UI 框架**：手写 CSS 设计 tokens（浅/深主题）
 - 编译：主进程 `child_process` 调本机 `pdflatex/xelatex/lualatex`，自实现多遍循环（检测 "Rerun"）+ 按需 BibTeX
 - 导出：PDF 复制、`Compress-Archive` 打包、Pandoc 转换
+- 版本管理：**isomorphic-git**（纯 JS，零安装）+ **jsdiff**，版本库在工程内 `.mylatex/versions`
 
 安全：`contextIsolation` + `sandbox`，preload 白名单 IPC，无 `nodeIntegration`。
 
 ```
 src/
-├─ main/        # 窗口、编译(compiler)、SyncTeX、TeX 检测(tex-detect)、文件服务、导出(exporter)、IPC
+├─ main/        # 窗口、编译(compiler)、SyncTeX、TeX 检测(tex-detect)、文件服务、导出(exporter)、版本管理(versionService)、IPC
 ├─ preload/     # contextBridge 白名单 API
 └─ renderer/    # React UI（components / store / editor-view / templates）
 ```
