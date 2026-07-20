@@ -1,6 +1,6 @@
 {
   "name": "owlatex",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "自研 LaTeX IDE 桌面应用（Electron + React）",
   "main": "./out/main/index.js",
   "author": "",
