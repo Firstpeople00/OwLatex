@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { useStore } from '../store/store'
 import { Icon } from './Icon'
 
@@ -10,15 +11,32 @@ export default function TabBar(): JSX.Element | null {
   const activeFile = useStore((s) => s.activeFile)
   const dirty = useStore((s) => s.dirty)
   const buffers = useStore((s) => s.buffers)
+  const barRef = useRef<HTMLDivElement>(null)
+  const activeRef = useRef<HTMLDivElement>(null)
+
+  // 切换/新开标签时，把活动标签滚进可见区域（否则右侧标签会被遮住）
+  useEffect(() => {
+    activeRef.current?.scrollIntoView({ inline: 'nearest', block: 'nearest' })
+  }, [activeFile, openFiles.length])
+
   if (openFiles.length === 0) return null
   return (
-    <div className="tabbar">
+    <div
+      className="tabbar"
+      ref={barRef}
+      // 竖向滚轮 → 横向滚动标签
+      onWheel={(e) => {
+        const el = barRef.current
+        if (el) el.scrollLeft += e.deltaY || e.deltaX
+      }}
+    >
       {openFiles.map((p) => {
         const active = p === activeFile
         const isDirty = active ? dirty : buffers[p]?.dirty
         return (
           <div
             key={p}
+            ref={active ? activeRef : undefined}
             className={`tab${active ? ' active' : ''}${isDirty ? ' dirty' : ''}`}
             title={p}
             onMouseDown={(e) => {
